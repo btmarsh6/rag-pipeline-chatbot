@@ -46,7 +46,7 @@ def numbered_steps(steps):
         result += f'{i+1} {step}\n'
     return result
 
-
+#add col description to doc
 def create_doc(row):
     """
     Collapses each row into a single document for the recipe,
@@ -56,13 +56,14 @@ def create_doc(row):
     name = row['name']
     minutes = row['minutes']
     tags = ', '.join(row['tags'])
+    description = row['description']
     n_ingredients = row['n_ingredients']
     ingredients = ', '.join(row['ingredients'])
     steps = numbered_steps(row['steps'])    
     nutrition_info = nutrition_labels(row['nutrition'])
     
     # Combine fields into full recipe    
-    full_recipe = f"Name: {name}\nCook Time: {minutes} minutes\nTags: {tags}\nNumber of ingredients: {n_ingredients}\nIngredients List: {ingredients}\nSteps:\n{steps}\nNutrition: {nutrition_info}"
+    full_recipe = f"Name: {name}\n\nCook Time: {minutes} minutes\n\nTags: {tags}\n\nDescription: {description}\n\nNumber of ingredients: {n_ingredients}\n\nIngredients List: {ingredients}\n\nSteps:\n{steps}\n\nNutrition: {nutrition_info}"
     return full_recipe
 
 
