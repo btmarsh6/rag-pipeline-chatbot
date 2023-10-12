@@ -21,7 +21,7 @@ chainlit = "^0.7.0"
 pandas = "2.0.3"
 kaggle = "^1.5.16"
 faiss-cpu = "^1.7.2"
-
+sqlalchemy = "1.4.47"
 
 [build-system]
 requires = ["poetry-core"]
