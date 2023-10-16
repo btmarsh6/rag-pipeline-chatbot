@@ -72,8 +72,11 @@ def create_doc(row):
 
 # Create single full_recipe doc for each row.
 recipe_df['full_recipe'] = recipe_df.apply(create_doc, axis=1)
+docs_df = pd.DataFrame(recipe_df[['name', 'full_recipe']])
+
+# Drop row with missing name
+docs_df.dropna(inplace=True)
 
 # Create CSV of full recipe documents
 print('Saving prepared documents...')
-docs_df = pd.DataFrame(recipe_df[['name', 'full_recipe']])
 docs_df.to_csv('../../data/recipe_docs.csv', index=False)
