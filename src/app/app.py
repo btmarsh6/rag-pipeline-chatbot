@@ -4,10 +4,14 @@ import os
 
 
 # Load environment variables
-openai_key = os.environ['OPENAI_HACKTOBERFEST_KEY']
+openai_key = os.environ['OPENAI_API_KEY']
+
 
 # Initialize documents
-filepath = '../../data/recipe_docs.csv'
+filepath = 'data/recipes_prepared_100.csv'
+if not os.path.isfile(filepath):        
+       print("Data file data/recipes_prepared_100.csv not found")
+       
 documents = initialize_documents(filepath)
 
 # Initialize document store and retriever
