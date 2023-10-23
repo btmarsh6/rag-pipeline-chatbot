@@ -6,6 +6,8 @@ import os
 import pandas as pd
 
 
+
+
 def initialize_documents(file_path):
     """
     Casts recipes from prepared recipe_docs.csv file into document structure for Haystack.
@@ -16,14 +18,20 @@ def initialize_documents(file_path):
         documents ()
     """
     # Load data
-    df = pd.read_csv(file_path)
-    # Cast data into Haystack Document objects
-    titles = list(df['name'].values)
-    texts = list(df['full_recipe'].values)
-    documents = []
-    for title, text in zip(titles, texts):
-        documents.append(Document(content=text, meta={'name': title or ''}))
-    return documents
+    df = pd.read_csv(file_path)    
+
+    if "question" not in df or  "answer" not in df:
+            raise ValueError("The CSV must contain two columns named 'question' and 'answer'")    
+
+    df = df.rename(columns={"answer": "content"})
+    
+    docs_dicts = df.to_dict(orient="records")
+
+    docs = []
+    for dictionary in docs_dicts:            
+        docs.append(Document.from_dict(dictionary))
+
+    return docs
 
 
 def initialize_faiss_document_store(documents):
@@ -66,13 +74,21 @@ def initialize_rag_pipeline(retriever, openai_key):
     Returns:
         query_pipeline (Pipeline): Pipeline for RAG-based question answering.
     """
-    prompt_template = PromptTemplate(prompt=""""Answer the following query based on the provided context. If the context does
-                                                not include an answer, reply with 'The data does not contain information related to the question'.\n
-                                                Query: {query}\n
-                                                Documents: {join(documents)}
-                                                Answer: 
+    #prompt_template = PromptTemplate(prompt=""""Answer the following query based on the provided context. If the context does
+    #                                            not include an answer, reply with 'The data does not contain information related to the question'.\n
+    #                                            Query: {query}\n
+    #                                            Documents: {join(documents)}
+    #                                            Answer: 
+    #                                        """,
+    #                                        output_parser=AnswerParser())
+
+    prompt_template = PromptTemplate(prompt=""""Generate the recipe Steps by the Ingredients and follow the similar order as provided in the Examples\n
+                                                Ingredients: {query}\n
+                                                Examples: {join(documents)}
+                                                Steps:
                                             """,
                                             output_parser=AnswerParser())
+    
     prompt_node = PromptNode(model_name_or_path="gpt-3.5-turbo",
                              api_key=openai_key,
                              default_prompt_template=prompt_template,
@@ -88,16 +104,16 @@ def initialize_rag_pipeline(retriever, openai_key):
 
 if __name__ == "__main__":
     # Load environment variables (if any)
-    openai_key = os.environ['OPENAI_HACKTOBERFEST_KEY']
+    openai_key = os.environ['OPENAI_API_KEY']    
 
     # Initialize documents
-    documents = initialize_documents('../../data/recipe_docs.csv')
+    #documents = initialize_documents('data/recipes_prepared_100.csv')
 
     # Initialize document store and retriever
-    document_store, retriever = initialize_faiss_document_store(documents=documents)
+    #document_store, retriever = initialize_faiss_document_store(documents=documents)
 
     # Initialize pipeline
-    query_pipeline = initialize_rag_pipeline(retriever=retriever, openai_key=openai_key)
+    #query_pipeline = initialize_rag_pipeline(retriever=retriever, openai_key=openai_key)
 
 
 
