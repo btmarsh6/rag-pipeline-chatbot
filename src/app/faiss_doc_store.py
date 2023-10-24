@@ -6,6 +6,8 @@ import os
 import pandas as pd
 
 
+
+
 def initialize_documents(file_path):
     """
     Casts recipes from prepared recipe_docs.csv file into document structure for Haystack.
@@ -75,6 +77,7 @@ def initialize_rag_pipeline(retriever, openai_key):
                                      Related text: {join(documents)} \n\n Question: {query} \n\n Answer:
                                             """,
                                             output_parser=AnswerParser())
+    
     prompt_node = PromptNode(model_name_or_path="gpt-3.5-turbo",
                              api_key=openai_key,
                              default_prompt_template=prompt_template,
@@ -90,16 +93,16 @@ def initialize_rag_pipeline(retriever, openai_key):
 
 if __name__ == "__main__":
     # Load environment variables (if any)
-    openai_key = os.environ['OPENAI_HACKTOBERFEST_KEY']
+    openai_key = os.environ['OPENAI_API_KEY']    
 
     # Initialize documents
-    documents = initialize_documents('../../data/recipe_docs.csv')
+    #documents = initialize_documents('data/recipes_prepared_100.csv')
 
     # Initialize document store and retriever
-    document_store, retriever = initialize_faiss_document_store(documents=documents)
+    #document_store, retriever = initialize_faiss_document_store(documents=documents)
 
     # Initialize pipeline
-    query_pipeline = initialize_rag_pipeline(retriever=retriever, openai_key=openai_key)
+    #query_pipeline = initialize_rag_pipeline(retriever=retriever, openai_key=openai_key)
 
 
 
