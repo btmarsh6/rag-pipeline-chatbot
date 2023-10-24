@@ -17,9 +17,13 @@ def initialize_documents(file_path):
     """
     # Load data
     df = pd.read_csv(file_path)
+    
+    # Small sample for testing purposes.
+    sample_df = df.sample(n=1000)
+
     # Cast data into Haystack Document objects
-    titles = list(df['name'].values)
-    texts = list(df['full_recipe'].values)
+    titles = list(sample_df['name'].values)
+    texts = list(sample_df['full_recipe'].values)
     documents = []
     for title, text in zip(titles, texts):
         documents.append(Document(content=text, meta={'name': title or ''}))
@@ -66,11 +70,9 @@ def initialize_rag_pipeline(retriever, openai_key):
     Returns:
         query_pipeline (Pipeline): Pipeline for RAG-based question answering.
     """
-    prompt_template = PromptTemplate(prompt=""""Answer the following query based on the provided context. If the context does
-                                                not include an answer, reply with 'The data does not contain information related to the question'.\n
-                                                Query: {query}\n
-                                                Documents: {join(documents)}
-                                                Answer: 
+    prompt_template = PromptTemplate(prompt=""""Offer the user the recipe that best matches their query.
+                                     If they ask for a different option, provide them the next best match.
+                                     Related text: {join(documents)} \n\n Question: {query} \n\n Answer:
                                             """,
                                             output_parser=AnswerParser())
     prompt_node = PromptNode(model_name_or_path="gpt-3.5-turbo",
