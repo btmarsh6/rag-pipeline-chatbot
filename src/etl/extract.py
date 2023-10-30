@@ -99,20 +99,47 @@ def to_nutrition(row):
     return nutrition_labels(row['nutrition'])
 
 # +
+def create_full_recipe(row):
+    """
+    Collapses each row into a single document for the recipe,
+    adding labels to column values.
+    """
+    # Extract and format relevant data from each field
+    name = row['name']
+    rating = row['rating']
+    minutes = row['minutes']
+    tags = row['tags']
+    description = row['description']
+    n_ingredients = row['n_ingredients']
+    ingredients = row['ingredients']
+    steps = row['steps']    
+    nutrition_info = row['nutrition']
+
+    # Combine fields into full recipe    
+    full_recipe = f"Name: {name}\n\nRating: {rating}/5\n\nCook Time: {minutes} minutes\n\nTags: {tags}\n\nDescription: {description}\n\nNumber of ingredients: {n_ingredients}\n\nIngredients List: {ingredients}\n\nSteps:\n{steps}\n\nNutrition: {nutrition_info}"
+    return full_recipe
+
+# +
 def df_transform(df):
     df['rating'] = df.apply(to_rating, axis=1)
     df['tags'] = df.apply(to_tags, axis=1)    
     df['nutrition'] = df.apply(to_nutrition, axis=1)    
     df['ingredients'] = df.apply(to_ingredients, axis=1)
     df['steps'] = df.apply(to_steps, axis=1)    
+    df['full_recipe'] = df.apply(create_full_recipe, axis=1)
     return df
 
 # +
 def final_rename(df):     
     df.fillna(value="", inplace=True)
     df["name"] = df["name"].apply(lambda x: x.strip())
-    df['question'] = "Ingredients:" + df['ingredients']
-    df['answer'] = "Ingredients:"+ df['ingredients']+"\nSteps:"+ df['steps']
+
+    # use only ingredients and steps
+    #df['question'] = "Ingredients:" + df['ingredients']
+
+    # use full recipe as question
+    df['question'] = df['full_recipe']
+    df['answer'] = "Ingredients:"+ df['ingredients']+"\nSteps:"+ df['steps'] 
     return df
 
 # +
@@ -146,7 +173,7 @@ if __name__ == "__main__":
        if df.empty:
            print('DataFrame is empty!')
        else:
-           df_transformed = final_rename(df_transform(df))
+           df_transformed = final_rename(df_transform(df))           
 
            save_prepared(df_transformed,prepared_dir, prepared_recipe_file_name)
            print('Saved to preprocessed folder') 
