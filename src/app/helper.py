@@ -9,7 +9,8 @@ import pandas as pd
 
 def initialize_documents(file_path):
     """
-    Casts recipes from prepared recipe_docs.csv file into document structure for Haystack.
+    Casts recipes from prepared recipe_docs.csv file into document
+    structure for Haystack.
 
     Args:
         file_path (str): location of recipe_docs.csv file
@@ -18,7 +19,7 @@ def initialize_documents(file_path):
     """
     # Load data
     df = pd.read_csv(file_path)
-    
+
     # Small sample for testing purposes.
     sample_df = df.sample(n=1000)
 
@@ -110,8 +111,12 @@ def initialize_rag_pipeline(retriever, openai_key):
                              model_kwargs={"stream": True})
 
     query_pipeline = Pipeline()
-    query_pipeline.add_node(component=retriever, name="Retriever", inputs=["Query"])
-    query_pipeline.add_node(component=prompt_node, name="PromptNode", inputs=["Retriever"])
+    query_pipeline.add_node(component=retriever,
+                            name="Retriever",
+                            inputs=["Query"])
+    query_pipeline.add_node(component=prompt_node,
+                            name="PromptNode",
+                            inputs=["Retriever"])
 
     return query_pipeline
 
@@ -121,12 +126,11 @@ if __name__ == "__main__":
     openai_key = os.environ['OPENAI_HACKTOBERFEST_KEY']
 
     # Initialize documents
-    # documents = initialize_documents('../../data/recipe_docs.csv')
+    documents = initialize_documents('../../data/recipe_docs.csv')
 
     # Initialize document store and retriever
-    # document_store, retriever = initialize_faiss_document_store(documents=documents)
-    document_store, retriever = preloaded_faiss(index_path=index_path, config_path=)
+    document_store, retriever = initialize_faiss_document_store(documents=documents)
+    # document_store, retriever = preloaded_faiss(index_path=index_path, config_path=config_path)
 
     # Initialize pipeline
     query_pipeline = initialize_rag_pipeline(retriever=retriever, openai_key=openai_key)
-

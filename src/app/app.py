@@ -1,5 +1,6 @@
 import chainlit as cl
-from helper import initialize_documents, initialize_faiss_document_store, initialize_rag_pipeline
+from helper import initialize_documents, initialize_faiss_document_store
+from helper import initialize_rag_pipeline
 import os
 
 
@@ -14,7 +15,8 @@ documents = initialize_documents(filepath)
 document_store, retriever = initialize_faiss_document_store(documents=documents)
 
 # Initialize pipeline
-query_pipeline = initialize_rag_pipeline(retriever=retriever, openai_key=openai_key)
+query_pipeline = initialize_rag_pipeline(retriever=retriever,
+                                         openai_key=openai_key)
 
 
 @cl.on_message
