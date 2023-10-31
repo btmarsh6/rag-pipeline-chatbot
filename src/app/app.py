@@ -1,25 +1,60 @@
-import chainlit as cl
-from faiss_doc_store import initialize_documents, initialize_faiss_document_store, initialize_rag_pipeline
 import os
+from haystack import Pipeline
+from haystack.document_stores import FAISSDocumentStore
+from haystack.nodes import EmbeddingRetriever, PromptNode, PromptTemplate, AnswerParser
+from dotenv import load_dotenv
+import chainlit as cl
 
 
-# Load environment variables
-openai_key = os.environ['OPENAI_API_KEY']
+def initialize_rag_pipeline(index_path,config_path,openai_key):
+    
+    """
+    Initialize a pipeline for RAG-based chatbot.
+    Args:
+        retriever (EmbeddingRetriever): Embedding retriever.
+        openai_key (str): API key for OpenAI.
+    Returns:
+        query_pipeline (Pipeline): Pipeline for RAG-based question answering.
+    """
+    # load faiss index
+    try:
+        document_store = FAISSDocumentStore.load(index_path=index_path, config_path=config_path)
+    except:
+        print("Error loading fais index")
+        return None
+
+    prompt_template = PromptTemplate(prompt=""""Generate the recipe Steps by the Ingredients and follow the similar order as provided in the Examples\n
+                                                Ingredients: {query}\n
+                                                Examples: {join(documents)}
+                                                Steps:
+                                            """,
+                                            output_parser=AnswerParser())
+    
+    prompt_node = PromptNode(model_name_or_path="gpt-4",
+                             api_key=openai_key,
+                             default_prompt_template=prompt_template )
+    
+    retriever = EmbeddingRetriever(
+        document_store=document_store,
+        embedding_model="sentence-transformers/all-MiniLM-L6-v2")
+
+    query_pipeline = Pipeline()
+    query_pipeline.add_node(component=retriever, name="Retriever", inputs=["Query"])
+    query_pipeline.add_node(component=prompt_node, name="PromptNode", inputs=["Retriever"])
+    return query_pipeline
+ 
+  
 
 
-# Initialize documents
-filepath = 'data/recipes_prepared_100.csv'
-if not os.path.isfile(filepath):        
-       print("Data file data/recipes_prepared_100.csv not found")
-       
-documents = initialize_documents(filepath)
+# load env
+load_dotenv()
+openai_api_key = os.getenv("OPENAI_API_KEY")
 
-# Initialize document store and retriever
-document_store, retriever = initialize_faiss_document_store(documents=documents)
+#paths to index and config
+index_path = os.path.join(os.getcwd(),"qa_index.faiss")
+config_path = os.path.join(os.getcwd(), "qa_config.json")
 
-# Initialize pipeline
-query_pipeline = initialize_rag_pipeline(retriever=retriever, openai_key=openai_key)
-
+query_pipeline = initialize_rag_pipeline(index_path,config_path,openai_api_key)
 
 @cl.on_message
 async def main(message: str):
