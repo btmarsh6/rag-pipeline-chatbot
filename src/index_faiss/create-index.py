@@ -82,7 +82,7 @@ def initialize_document_store():
     """
     
     # Initialize DocumentStore
-    document_store = FAISSDocumentStore(faiss_index_factory_str='Flat', 
+    document_store = FAISSDocumentStore(faiss_index_factory_str='Flat',embedding_dim=384, 
                                         return_embedding=True)
 
     # Initialize Retriever
@@ -109,9 +109,9 @@ def add_embedding_to_data(df, retriever):
 
 def load_document_store(document_store,df):
     """Load data to document store"""
-    docs_to_index = df.to_dict(orient="records")
+    
     document_store.delete_documents()
-    document_store.write_documents(docs_to_index)
+    document_store.write_documents(df)
     print('document store loaded')
     return document_store
 
@@ -133,15 +133,15 @@ def create_index(data_dir, document_store_dir):
 
        # load document store
        document_store = load_document_store(document_store, df)
-       print("document store size", len(document_store))  
+       
 
        # add embeddings
        document_store.update_embeddings(retriever)
 
        # save index
        document_store.save(index_path=index_path, config_path=config_path)
-    except:
-        pass
+    except Exception as e:
+       print("error",e)
 
 if __name__ == "__main__":
     data_dir = os.path.join(os.getcwd(),prepared_data_dir)
