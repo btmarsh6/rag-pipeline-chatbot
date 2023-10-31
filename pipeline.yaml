@@ -2,4 +2,7 @@ tasks:
   - source: src/etl/extract.py
     product:
       nb: src/products/extract-pipeline.ipynb
-      data: data.duckdb
+  - source: src/index_faiss/create-index.py
+    product:
+      nb: src/products/create-index-pipeline.ipynb
+      
